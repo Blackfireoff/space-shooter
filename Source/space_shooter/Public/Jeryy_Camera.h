@@ -6,6 +6,11 @@
 #include "GameFramework/Pawn.h"
 #include "Jeryy_Camera.generated.h"
 
+// Forward declarations for components
+class USceneComponent;
+class USpringArmComponent;
+class UCameraComponent;
+
 UCLASS()
 class SPACE_SHOOTER_API AJeryy_Camera : public APawn
 {
@@ -16,6 +21,16 @@ public:
 	AJeryy_Camera();
 
 protected:
+	// Root + Camera components
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* Root;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	USpringArmComponent* SpringArm;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* Camera;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 

@@ -18,16 +18,14 @@ AJeryy_Camera::AJeryy_Camera()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(Root);
-	SpringArm->TargetArmLength = 600.0f; // Distance to camera
-	SpringArm->bDoCollisionTest = false; // Prevent camera pull-in
-	SpringArm->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f)); // Slight top-down angle
+	// Removed TargetArmLength, rotation and collision test setup so Blueprint can configure them.
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	Camera->bUsePawnControlRotation = false;
+	Camera->bUsePawnControlRotation = false; // Leave control rotation flag; adjust in BP if desired.
 
-	// Make this pawn the default player camera
-	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	// Disable auto possess (Battleship now handles player view)
+	AutoPossessPlayer = EAutoReceiveInput::Disabled;
 }
 
 // Called when the game starts or when spawned

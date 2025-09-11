@@ -6,6 +6,16 @@
 #include "GameFramework/Pawn.h"
 #include "Battleship.generated.h"
 
+// Forward declarations
+class UBoxComponent;
+class UStaticMeshComponent;
+class USpringArmComponent;
+class UCameraComponent;
+class UFloatingPawnMovement;
+class UInputAction;
+class UInputMappingContext;
+struct FInputActionValue;
+
 UCLASS()
 class SPACE_SHOOTER_API ABattleship : public APawn
 {
@@ -29,16 +39,33 @@ public:
 
 private :
 
-	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* BoxCollision;
+    UPROPERTY(VisibleAnywhere)
+    class UBoxComponent* BoxCollision;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* StaticMesh;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+    class UStaticMeshComponent* StaticMesh;
 
-	// Camera system components
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* SpringArm;
+    // Camera system components
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+    class USpringArmComponent* SpringArm;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* Camera;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+    class UCameraComponent* Camera;
+
+    // Movement component
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+    UFloatingPawnMovement* MovementComponent;
+
+    // Enhanced Input assets (set these in the BP_Battleship)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+    UInputMappingContext* DefaultMappingContext;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+    UInputAction* MoveAction;
+
+    // Input handlers
+    void Move(const FInputActionValue& Value);
+
+protected:
+    virtual UPawnMovementComponent* GetMovementComponent() const override;
 };

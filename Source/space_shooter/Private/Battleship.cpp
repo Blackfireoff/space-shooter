@@ -6,11 +6,14 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h" // Added for camera boom
 #include "Camera/CameraComponent.h"          // Added for camera
+#include "GameFramework/FloatingPawnMovement.h" // Movement
+#include "EnhancedInputComponent.h"             // Enhanced input binding
+#include "EnhancedInputSubsystems.h"            // Mapping context subsystem
+#include "InputActionValue.h"                   // FInputActionValue
 
 // Sets default values
 ABattleship::ABattleship()
 {
-    // Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
     // Create BoxComponent and set as RootComponent for the Actor
@@ -31,6 +34,8 @@ ABattleship::ABattleship()
     Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
     Camera->bUsePawnControlRotation = false;
 
+    MovementComponent = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("MovementComponent"));
+
     // Possess this pawn by default so camera follows the battleship
     AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
@@ -39,7 +44,19 @@ ABattleship::ABattleship()
 void ABattleship::BeginPlay()
 {
     Super::BeginPlay();
-    
+    if (APlayerController* PC = Cast<APlayerController>(GetController()))
+    {
+        if (ULocalPlayer* LP = PC->GetLocalPlayer())
+        {
+            if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LP))
+            {
+                if (DefaultMappingContext)
+                {
+                    Subsystem->AddMappingContext(DefaultMappingContext, 0);
+                }
+            }
+        }
+    }
 }
 
 // Called every frame
@@ -53,5 +70,36 @@ void ABattleship::Tick(float DeltaTime)
 void ABattleship::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
+    if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+    {
+        if (MoveAction)
+        {
+            EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABattleship::Move);
+            EIC->BindAction(MoveAction, ETriggerEvent::Completed, this, &ABattleship::Move); // Zero input on release
+        }
+    }
+}
 
+void ABattleship::Move(const FInputActionValue& Value)
+{
+    // Expecting a 2D Vector from the Enhanced Input Action (X = Forward, Y = Right)
+    const FVector2D Input = Value.Get<FVector2D>();
+    if (!Controller || Input.IsNearlyZero())
+    {
+        return;
+    }
+    // Move only in world X (forward) and Y (right) plane, ignore Z.
+    if (Input.X != 0.f)
+    {
+        AddMovementInput(FVector::ForwardVector, Input.X);
+    }
+    if (Input.Y != 0.f)
+    {
+        AddMovementInput(FVector::RightVector, Input.Y);
+    }
+}
+
+UPawnMovementComponent* ABattleship::GetMovementComponent() const
+{
+    return MovementComponent;
 }
